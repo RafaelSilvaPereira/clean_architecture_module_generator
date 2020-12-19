@@ -1,0 +1,6 @@
+{
+  "name": "clean_architecture_module_generator",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT"
+}
