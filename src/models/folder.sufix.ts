@@ -50,8 +50,9 @@ export class FolderSufixes {
     } = builder;
 
     this.main = nullTernary(main, "main");
+    this.mainInterfaces = nullTernary(mainInterfaces, "interface");
     this.mainDomain = nullTernary(mainDomain, "domain");
-    this.mainDomainEntities = nullTernary(mainDomainModels, "models");
+    this.mainDomainModels = nullTernary(mainDomainModels, "models");
     this.mainDomainEntities = nullTernary(mainDomainEntities, "entities");
     this.mainDomainInterfaces = nullTernary(mainDomainInterfaces, "typedefs");
     this.mainUsecases = nullTernary(mainUsecases, "usecases");

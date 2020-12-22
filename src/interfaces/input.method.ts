@@ -1,5 +1,5 @@
 import { Params } from "../models/params";
 
-abstract class InputMethod {
+export abstract class InputMethod {
   abstract getConfiguration(): Promise<Params>;
 }

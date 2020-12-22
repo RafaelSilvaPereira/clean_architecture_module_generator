@@ -2,5 +2,14 @@
   "name": "clean_architecture_module_generator",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "fs": "^0.0.1-security"
+  },
+  "scripts": {
+    "go": "rm -rf dist/  && tsc && node dist/src/input.js"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.14"
+  }
 }

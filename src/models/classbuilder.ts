@@ -1,3 +1,4 @@
+import { nullTernary } from "./aux.funtions";
 import { FileBuilder } from "./filebuilder";
 
 export class ClassBuilder {
@@ -19,6 +20,10 @@ export class ClassBuilder {
     Object.assign(this, builder);
   }
 
+  getFileName(): string {
+    return this.fileBuilder.name;
+  }
+
   declaretionName() {
     return this.isInterface ? "I" + this.className : this.className;
   }
@@ -30,7 +35,7 @@ export class ClassBuilder {
     isInterface: boolean;
     superClass?: ClassBuilder;
     dependency?: ClassBuilder;
-    imports: "";
+    imports?: string;
   }): ClassBuilder {
     const {
       filename,
@@ -39,13 +44,11 @@ export class ClassBuilder {
       isInterface,
       superClass,
       dependency,
-      imports,
     } = builder;
+
+    const imports = nullTernary(builder.imports, "");
     const validDepency = ClassBuilder.getValidDependency(dependency);
-    const fullClassName = ClassBuilder.getFullClassName(
-      validDepency,
-      dependency
-    );
+
     const fullPropertyName = ClassBuilder.getFullProptertyName(
       validDepency,
       dependency
@@ -66,27 +69,31 @@ export class ClassBuilder {
       dependency,
       fullPropertyName
     );
+    console.log(constructorParams);
+
     const constructor = ClassBuilder.getConstructor(
       isInterface,
       _className,
       constructorParams
     );
 
-    const supClass =
-      superClass != null ? "implements ${superClass?.realClassName}" : "";
+    const supClass = !!superClass
+      ? `implements ${superClass?.declaretionName()}`
+      : "";
     const content = `\n
-import '${imports.trim()}';
+import {} from '${imports.trim()}';
 
-${classPrefix} ${_className} ${supClass} {
+export ${classPrefix} ${_className} ${supClass} {
   ${properties}
 
-   ${constructor}
+  ${constructor}
 }
 `;
+    const formatedFileName = isInterface ? "i." + filename : filename;
     return new ClassBuilder({
       isInterface: isInterface,
       className: className,
-      fileBuilder: new FileBuilder(filename, location, content),
+      fileBuilder: FileBuilder.factory(formatedFileName, location, content),
       imports: imports,
       dependency: dependency,
       superClass: superClass,
@@ -97,9 +104,10 @@ ${classPrefix} ${_className} ${supClass} {
     _className: string,
     constructorParams: string
   ) {
+    const builderType = !!constructorParams ? constructorParams : "any";
     return !isInterface
-      ? `$constructor(builder: ${constructorParams}) {
-      Object.assing(this, builder);
+      ? `constructor(builder: ${builderType}) {
+      Object.assign(this, builder);
     }`
       : "";
   }
@@ -107,7 +115,7 @@ ${classPrefix} ${_className} ${supClass} {
     dependency: ClassBuilder,
     fullPropertyName: string
   ): string {
-    return dependency !== null
+    return !!dependency
       ? `{${fullPropertyName}: ${dependency.declaretionName()}}`
       : "";
   }
@@ -125,9 +133,9 @@ ${classPrefix} ${_className} ${supClass} {
   ): string {
     let properties;
     if (!isInterface && validDepency) {
-      properties = `readonly  ${dependency.className[0].toLowerCase()}${dependency.className.substring(
+      properties = `private readonly  ${dependency.className[0].toLowerCase()}${dependency.className.substring(
         1
-      )}}; : : I${dependency.declaretionName()}`;
+      )} : ${dependency.declaretionName()}`;
     } else {
       properties = "";
     }
@@ -151,6 +159,8 @@ ${classPrefix} ${_className} ${supClass} {
   }
 
   static getValidDependency(dependency: ClassBuilder): boolean {
-    return dependency !== null && dependency.className.length > 0;
+    console.log(dependency);
+
+    return !!dependency && dependency.className.length > 0;
   }
 }

@@ -1,58 +1,45 @@
+import { nullTernary } from "./aux.funtions";
 import { ExportFileBuilder } from "./filebuilder";
+import { RootPath } from "./params";
 
-class ModuleFolderGen {
- 
-  readonly level: number;
+export interface FolderGenBuilder {
+  nestedLevel: number;
+  parent: FolderGen;
+  folderName: string;
+}
 
+export class FolderGen {
+  readonly nestedLevel: number;
   readonly exportFile: ExportFileBuilder;
 
- 
-  readonly name: string;
+  readonly parent: FolderGen;
+  readonly folderName: string;
 
- 
-  readonly parent: ModuleFolderGen;
-
- 
-  readonly folderName: String;
-  constructor(builder: {
-    level: number;
-    name: string;
-    parent: ModuleFolderGen;
-    folderName: string;
-  }) {
+  constructor(builder: FolderGenBuilder) {
     Object.assign(this, builder);
-    this.exportFile = new ExportFileBuilder(builder.name, this.path());
+    this.exportFile = new ExportFileBuilder(builder.folderName, this.path());
   }
 
-  
   separator = () => "/";
 
-  
-  exportName = () => `${this.name}/${this.name}.exports.`;
+  exportName = () => this.exportFile.name;
 
-  
-  path() {
-    const oldPath = ""; //`${(parent?.path ?? Directory.current.path)}`;
-    const newPath = this.name != null ? `${this.separator()}${this.name}` : "";
-
+  path(): string {
+    const oldPath = `${nullTernary(this.parent?.path(), RootPath.I().path)}`;
+    const newPath =
+      this.folderName != null ? `${this.separator()}${this.folderName}` : "";
     return `${oldPath}${newPath}`;
   }
 
-  
-  getImports() {
+  getImports(): string {
     let numberOfBars = "";
-    for (var i = 0; i < this.level; i++) {
+    for (var i = 0; i < this.nestedLevel; i++) {
       numberOfBars += "../";
     }
-    return `${numberOfBars}${this.folderName}.exports.dart`;
+    return `${numberOfBars}${RootPath.I().name}.exports`;
   }
 
-  
   generateExportFile(filesNames: string[]): void {
-    
-    const content = filesNames.reduce(
-      (pv, cv) => `${cv}\nexport *  from '${cv.replace(".ts", "")}'`
-    );
-    this.exportFile.content = content;
+    this.exportFile.setContentFromFileNames(filesNames);
   }
 }
